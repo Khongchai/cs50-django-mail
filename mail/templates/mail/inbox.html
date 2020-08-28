@@ -12,11 +12,17 @@
     <hr>
 
     <div id="emails-view">
+        <h1 id="emails-title"></h1>
+        <div style="width: 100%; height: fit-content" id="mailsContainer">
+
+        </div>
+        
+
     </div>
 
     <div id="compose-view">
         <h3>New Email</h3>
-        <form id="compose-form">
+        <form id="compose-form" >
             <div class="form-group">
                 From: <input disabled class="form-control" value="{{ request.user.email }}">
             </div>
@@ -27,11 +33,12 @@
                 <input class="form-control" id="compose-subject" placeholder="Subject">
             </div>
             <textarea class="form-control" id="compose-body" placeholder="Message"></textarea>
-            <input type="submit" class="btn btn-primary"/>
+            <input type="button" id="submitButton"class="btn btn-primary" value="submit"/>
         </form>
     </div>
 {% endblock %}
 
 {% block script %}
+
     <script src="{% static 'mail/inbox.js' %}"></script>
 {% endblock %}

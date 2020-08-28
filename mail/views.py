@@ -14,6 +14,7 @@ def index(request):
 
     # Authenticated users view their inbox
     if request.user.is_authenticated:
+
         return render(request, "mail/inbox.html")
 
     # Everyone else is prompted to sign in
@@ -24,7 +25,6 @@ def index(request):
 @csrf_exempt
 @login_required
 def compose(request):
-    print("compose function in views.py")
     # Composing a new email must be via POST
     if request.method != "POST":
         return JsonResponse({"error": "POST request required."}, status=400)
@@ -36,7 +36,6 @@ def compose(request):
         return JsonResponse({
             "error": "At least one recipient required."
         }, status=400)
-
     # Convert email addresses to users
     recipients = []
     for email in emails:
@@ -74,7 +73,7 @@ def compose(request):
 
 @login_required
 def mailbox(request, mailbox):
-
+    
     # Filter emails returned based on mailbox
     if mailbox == "inbox":
         emails = Email.objects.filter(
@@ -90,7 +89,7 @@ def mailbox(request, mailbox):
         )
     else:
         return JsonResponse({"error": "Invalid mailbox."}, status=400)
-
+    
     # Return emails in reverse chronologial order
     emails = emails.order_by("-timestamp").all()
     return JsonResponse([email.serialize() for email in emails], safe=False)
