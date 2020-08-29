@@ -5,6 +5,8 @@ var form;
 var submitButton;
 var mailsContainer;
 var mailDetails;
+var archiveButton;
+
 
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -15,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
   submitButton = document.querySelector('#submitButton');
   mailsContainer = document.querySelector("#mailsContainer");
   mailDetails = document.querySelector("#mailDetails");
+  archiveButton = document.getElementById("archiveButton");
 
   // Use buttons to toggle between views
   document.querySelector('#inbox').addEventListener('click', () => load_mailbox('inbox'));
@@ -46,23 +49,8 @@ function load_mailbox(mailbox)
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
   document.querySelector('#emails-title').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
-  // Show the mailbox name
-  //might have to populate emaisl to the div through javascript
-  switch(mailbox)
-  {
-    
-    case ("inbox"):
-      load_inbox();
-      break;
-    case ("sent"):
-      load_sent();
-      break;
-    case ("archive"):
-      load_archive();
-      break;
-    default:
-      //do nothing
-  }
+
+  load_inbox(mailbox);
     
 }
 
@@ -97,62 +85,77 @@ function send_email()
     });
 
 }
-//this function takes care of populating mailbox
-function load_inbox()
+
+
+function load_inbox(mailName)
 {
-  fetch('/emails/inbox')
+
+  fetch(`/emails/${mailName}`)
 .then(response => response.json())
 .then(emails => {
-    // Print emails
-    console.log(emails);
+    //console.log(emails);
     mailDetails.style.display = "none";
+    mailsContainer.innerHTML = '';
     mailsContainer.style.display = "block";
-    for (let i = 0; i < emails.length; i++)
-    {
-      //check if status is archived, if archived, skip to next loop
 
-      //generate container for each of the mail
-      var mainDiv = document.createElement('div');
-      mainDiv.className = "EmailContainer";
 
-      //populate with the appropriate headings
-      var sender = document.createElement('div');
-      sender.className = "EmailFlex";
-      sender.innerHTML = `<h5>${emails[i].sender}</h5>`;
+      for (let i = 0; i < emails.length; i++)
+      {
 
-      var subject = document.createElement('div');
-      subject.className = "EmailFlex";
-      subject.innerHTML = emails[i].subject;
+        var mainDiv = document.createElement('div');
+        mainDiv.className = "EmailContainer";
+        if (emails[i].read)
+        {
+          mainDiv.style.background = "grey";
+        }
+        if (!emails[i].archived)
+        {
+          archiveButton.innerHTML = "Archive";
+        }
+        else
+        {
+          archiveButton.innerHTML = "Remove from archive";
+        }
 
-      var dateTime = document.createElement('div');
-      dateTime.className = "EmailFlex FloatRight";
-      dateTime.innerHTML = emails[i].timestamp;
+        var sender = document.createElement('div');
+        sender.className = "EmailFlex";
+        sender.innerHTML = `<h5>${emails[i].sender}</h5>`;
 
-      //on click load mail through JSON get
-      mainDiv.style.cursor = "pointer";
-      mainDiv.addEventListener("click", () => {
+        var subject = document.createElement('div');
+        subject.className = "EmailFlex";
+        subject.innerHTML = emails[i].subject;
+
+        var dateTime = document.createElement('div');
+        dateTime.className = "EmailFlex FloatRight";
+        dateTime.innerHTML = emails[i].timestamp;
+
+        mainDiv.style.cursor = "pointer";
+        mainDiv.addEventListener("click", function() {
+        this.style.background = "grey";
         mailsContainer.style.display = "none";
         mailDetails.style.display = "block";
-
+        
         document.getElementById("fromBlock").innerHTML = emails[i].sender;
         document.getElementById("toBlock").innerHTML = emails[i].recipients;
         document.getElementById("subjectBlock").innerHTML = emails[i].subject;
         document.getElementById("sentBlock").innerHTML = emails[i].timestamp;
         document.getElementById("contentBlock").innerHTML = emails[i].body;
-        
-        
-      });
+        archiveButton.onclick = function()
+        {
+          //pass in an inverted bool value at the end to remove from archive
+          changeReadStat(emails[i].id, "archive", !emails[i].archived);
+        };
 
-      //append to the parent div
-      mainDiv.appendChild(sender);
-      mainDiv.appendChild(subject);
-      mainDiv.appendChild(dateTime);
-      mailsContainer.appendChild(mainDiv);
-      
-      
+        //call a view in python to change the read status
+        changeReadStat(emails[i].id, "read");
+          
+        });
+        
+        mainDiv.appendChild(sender);
+        mainDiv.appendChild(subject);
+        mainDiv.appendChild(dateTime);
+        mailsContainer.appendChild(mainDiv);
     }
-    
-    
   });
 }
 
@@ -162,14 +165,34 @@ function reloadMailsContainer()
   mailDetails.style.display = "none";
 }
 
-
-function load_archive()
+function changeReadStat(emailID, operation, bool)
 {
+  if (operation === "read")
+  {
+    fetch(`/emails/${emailID}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+          read: true
+      })
+    })
+  }
+  else if (operation === "archive")
+  {
+    fetch(`/emails/${emailID}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        archived: bool
+      })
+    }).then(respond => {
+      if (respond.status == 204)
+      {
+        load_mailbox(operation);
+      }
+    });
 
+  }
+
+  
 }
 
-function load_sent()
-{
-
-}
 
