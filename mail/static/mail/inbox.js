@@ -4,6 +4,8 @@ var message;
 var form;
 var submitButton;
 var mailsContainer;
+var mailDetails;
+
 
 document.addEventListener('DOMContentLoaded', function() {
   recipients = document.querySelector('#compose-recipients');
@@ -12,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
   form = document.querySelector('#compose-form');
   submitButton = document.querySelector('#submitButton');
   mailsContainer = document.querySelector("#mailsContainer");
+  mailDetails = document.querySelector("#mailDetails");
 
   // Use buttons to toggle between views
   document.querySelector('#inbox').addEventListener('click', () => load_mailbox('inbox'));
@@ -102,11 +105,15 @@ function load_inbox()
 .then(emails => {
     // Print emails
     console.log(emails);
+    mailDetails.style.display = "none";
+    mailsContainer.style.display = "block";
     for (let i = 0; i < emails.length; i++)
     {
+      //check if status is archived, if archived, skip to next loop
+
       //generate container for each of the mail
-      var div = document.createElement('div');
-      div.className = "EmailContainer";
+      var mainDiv = document.createElement('div');
+      mainDiv.className = "EmailContainer";
 
       //populate with the appropriate headings
       var sender = document.createElement('div');
@@ -121,19 +128,40 @@ function load_inbox()
       dateTime.className = "EmailFlex FloatRight";
       dateTime.innerHTML = emails[i].timestamp;
 
+      //on click load mail through JSON get
+      mainDiv.style.cursor = "pointer";
+      mainDiv.addEventListener("click", () => {
+        mailsContainer.style.display = "none";
+        mailDetails.style.display = "block";
+
+        document.getElementById("fromBlock").innerHTML = emails[i].sender;
+        document.getElementById("toBlock").innerHTML = emails[i].recipients;
+        document.getElementById("subjectBlock").innerHTML = emails[i].subject;
+        document.getElementById("sentBlock").innerHTML = emails[i].timestamp;
+        document.getElementById("contentBlock").innerHTML = emails[i].body;
+        
+        
+      });
 
       //append to the parent div
-      div.appendChild(sender);
-      div.appendChild(subject);
-      div.appendChild(dateTime);
-      mailsContainer.appendChild(div);
-
-      //wrap around a link for the page
+      mainDiv.appendChild(sender);
+      mainDiv.appendChild(subject);
+      mainDiv.appendChild(dateTime);
+      mailsContainer.appendChild(mainDiv);
+      
       
     }
     
     
-});
+  });
+}
+
+function reloadMailsContainer()
+{
+  mailsContainer.style.display = "block";
+  mailDetails.style.display = "none";
+}
+
 
 function load_archive()
 {
@@ -145,4 +173,3 @@ function load_sent()
 
 }
 
-}

@@ -13,8 +13,21 @@
 
     <div id="emails-view">
         <h1 id="emails-title"></h1>
-        <div style="width: 100%; height: fit-content" id="mailsContainer">
+        <div style="width: 100%; height: fit-content; display: block" id="mailsContainer">
 
+        </div>
+        <div style="width: 100%; height: fit-content; display: none" id="mailDetails">
+            <br>
+            <h5>From: <span id="fromBlock" class="NormalizeText"></span></h5>
+            <h5>To: <span id="toBlock" class="NormalizeText"></span></h5>
+            <h5>Subject: <span id="subjectBlock" class="NormalizeText"></span></h5>
+            <h5>Sent Date: <span id="sentBlock" class="NormalizeText"></span></h5>
+            <hr>
+            <p id="contentBlock">
+
+            </p>
+            
+            <button class="btn btn-primary" onclick="reloadMailsContainer()">Back</button>
         </div>
         
 

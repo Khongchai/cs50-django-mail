@@ -8,7 +8,14 @@ textarea {
     width: fit-content;
     margin-right: 20px;
 }
-
+.NormalizeText
+{
+    font-weight: normal;
+}
+#messageBlock
+{
+    margin-top: 10px;
+}
 .FloatRight
 {
     float: right;
