@@ -1,3 +1,39 @@
 textarea {
     min-height: 400px;
 }
+
+.EmailFlex
+{
+    display: inline-flex;
+    width: fit-content;
+    margin-right: 20px;
+}
+.ContentEditables
+{
+    overflow-y: scroll;
+    height: 250px;
+    margin-bottom: 10px;
+}
+.NormalizeText
+{
+    font-weight: normal;
+}
+#messageBlock
+{
+    margin-top: 10px;
+}
+.FloatRight
+{
+    float: right;
+}
+
+.EmailContainer
+{
+    display: block;
+    width: 100%;
+    border-style: solid;
+    border-width: thin;
+    border-collapse: collapse;
+    height: fit-content;
+    padding: 8px;
+}
