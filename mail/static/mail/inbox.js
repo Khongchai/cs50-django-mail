@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('#sent').addEventListener('click', () => load_mailbox('sent'));
   document.querySelector('#archived').addEventListener('click', () => load_mailbox('archive'));
   document.querySelector('#compose').addEventListener('click', compose_email);
-  document.querySelector('#compose-form').addEventListener.onsubmit = send_email()
+  document.querySelector('#compose-form').addEventListener("submit", send_email);
 
   // By default, load the inbox
   load_mailbox('inbox');
@@ -45,32 +45,17 @@ function send_email()
   fetch('/emails', {
     method: 'POST',
     body: JSON.stringify({
-        recipients: 'baz@example.com',
-        subject: 'Meeting time',
-        body: 'How about we meet tomorrow at 3pm?'
+        recipients: recipients.value,
+        subject: subject.value,
+        body: message.value
     })
   })
   .then(response => response.json())
   .then(result => {
       // Print result
       console.log(result);
+      load_mailbox('sent');
+      return false;
+      
   });
-  /* 
-  fetch('/emails', 
-  {
-    method: "POST",
-    body: JSON.stringify
-    ({
-      recipients: recipients.value,
-      subject: subject.value, 
-      body: message.value
-    }) //paren mistake here is preventing you from submitting to API
-    .then(response => response.json())
-    .then(result=>
-    {
-      //notify user that the email is sent successfully
-      alert(result);
-    })
-  });
-  */
 }
