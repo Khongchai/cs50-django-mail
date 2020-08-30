@@ -39,7 +39,7 @@ function compose_email() {
   // Clear out composition fields
   recipients.value = '';
   subject.value = '';
-  message.value = '';
+  message.innerHTML = '';
 }
 
 function load_mailbox(mailbox) 
@@ -48,6 +48,7 @@ function load_mailbox(mailbox)
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
+  document.querySelector("#compose-view-head").innerHTML = "New Email";
   document.querySelector('#emails-title').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
 
   load_inbox(mailbox);
@@ -63,13 +64,12 @@ function send_email()
     ({
       recipients: recipients.value,
       subject: subject.value, 
-      body: message.value
+      body: message.innerHTML
     })
   })
   .then(response => response.json())
   .then(result=>
     {
-      console.log(result);
       if (result["error"] != undefined)
       {
         alert(result["error"]);
@@ -93,68 +93,64 @@ function load_inbox(mailName)
   fetch(`/emails/${mailName}`)
 .then(response => response.json())
 .then(emails => {
-    //console.log(emails);
     mailDetails.style.display = "none";
     mailsContainer.innerHTML = '';
     mailsContainer.style.display = "block";
+    for (let i = 0; i < emails.length; i++)
+    {
 
-
-      for (let i = 0; i < emails.length; i++)
+      var mainDiv = document.createElement('div');
+      mainDiv.className = "EmailContainer";
+      if (emails[i].read)
       {
+        mainDiv.style.background = "grey";
+      }
+      if (!emails[i].archived)
+      {
+        archiveButton.innerHTML = "Archive";
+      }
+      else
+      {
+        archiveButton.innerHTML = "Remove from archive";
+      }
 
-        var mainDiv = document.createElement('div');
-        mainDiv.className = "EmailContainer";
-        if (emails[i].read)
-        {
-          mainDiv.style.background = "grey";
-        }
-        if (!emails[i].archived)
-        {
-          archiveButton.innerHTML = "Archive";
-        }
-        else
-        {
-          archiveButton.innerHTML = "Remove from archive";
-        }
+      var sender = document.createElement('div');
+      sender.className = "EmailFlex";
+      sender.innerHTML = `<h5>${emails[i].sender}</h5>`;
 
-        var sender = document.createElement('div');
-        sender.className = "EmailFlex";
-        sender.innerHTML = `<h5>${emails[i].sender}</h5>`;
+      var subject = document.createElement('div');
+      subject.className = "EmailFlex";
+      subject.innerHTML = emails[i].subject;
 
-        var subject = document.createElement('div');
-        subject.className = "EmailFlex";
-        subject.innerHTML = emails[i].subject;
+      var dateTime = document.createElement('div');
+      dateTime.className = "EmailFlex FloatRight";
+      dateTime.innerHTML = emails[i].timestamp;
 
-        var dateTime = document.createElement('div');
-        dateTime.className = "EmailFlex FloatRight";
-        dateTime.innerHTML = emails[i].timestamp;
+      mainDiv.style.cursor = "pointer";
+      mainDiv.addEventListener("click", function() {
+      this.style.background = "grey";
+      mailsContainer.style.display = "none";
+      mailDetails.style.display = "block";
+      
+      document.getElementById("fromBlock").innerHTML = emails[i].sender;
+      document.getElementById("toBlock").innerHTML = emails[i].recipients;
+      document.getElementById("subjectBlock").innerHTML = emails[i].subject;
+      document.getElementById("sentBlock").innerHTML = emails[i].timestamp;
+      document.getElementById("messageBlock").innerHTML = emails[i].body;
+      archiveButton.onclick = function()
+      {
+        //pass in an inverted bool value at the end to remove from archive
+        changeReadStat(emails[i].id, "archive", !emails[i].archived);
+      };
 
-        mainDiv.style.cursor = "pointer";
-        mainDiv.addEventListener("click", function() {
-        this.style.background = "grey";
-        mailsContainer.style.display = "none";
-        mailDetails.style.display = "block";
+      //call a view in python to change the read status
+      changeReadStat(emails[i].id, "read");
         
-        document.getElementById("fromBlock").innerHTML = emails[i].sender;
-        document.getElementById("toBlock").innerHTML = emails[i].recipients;
-        document.getElementById("subjectBlock").innerHTML = emails[i].subject;
-        document.getElementById("sentBlock").innerHTML = emails[i].timestamp;
-        document.getElementById("contentBlock").innerHTML = emails[i].body;
-        archiveButton.onclick = function()
-        {
-          //pass in an inverted bool value at the end to remove from archive
-          changeReadStat(emails[i].id, "archive", !emails[i].archived);
-        };
-
-        //call a view in python to change the read status
-        changeReadStat(emails[i].id, "read");
-          
-        });
-        
-        mainDiv.appendChild(sender);
-        mainDiv.appendChild(subject);
-        mainDiv.appendChild(dateTime);
-        mailsContainer.appendChild(mainDiv);
+      });
+      mainDiv.appendChild(sender);
+      mainDiv.appendChild(subject);
+      mainDiv.appendChild(dateTime);
+      mailsContainer.appendChild(mainDiv);
     }
   });
 }
@@ -191,8 +187,28 @@ function changeReadStat(emailID, operation, bool)
     });
 
   }
-
-  
 }
 
+function reply()
+{
+  // Show compose view and hide other views
+  document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#compose-view').style.display = 'block';
+  document.querySelector("#compose-view-head").innerHTML = "Reply";
+
+  recipients.value = document.getElementById("fromBlock").innerHTML;
+  subject.value = document.getElementById("subjectBlock").innerHTML;
+  let subjectPattern = /(Re:)./;
+  if (!subjectPattern.test(subject.value))
+  {
+    subject.value = `Re: ${subject.value}`;
+  }
+
+  
+  let mainMessage = document.getElementById("messageBlock").innerHTML;
+  let timeStamp = document.getElementById("sentBlock").innerHTML;
+  let heading = `<div>On ${timeStamp} ${recipients.value} wrote:</div><br>`;
+  let finalBody = `${heading} ${mainMessage}`;
+  message.innerHTML = `${finalBody}`;
+}
 

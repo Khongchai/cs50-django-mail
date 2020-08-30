@@ -22,8 +22,9 @@
             <h5>To: <span id="toBlock" class="NormalizeText"></span></h5>
             <h5>Subject: <span id="subjectBlock" class="NormalizeText"></span></h5>
             <h5>Sent Date: <span id="sentBlock" class="NormalizeText"></span></h5>
+            <button class="btn btn-primary" onclick="reply()">Reply</button>
             <hr>
-            <p id="contentBlock">
+            <p id="messageBlock">
 
             </p>
             
@@ -35,7 +36,7 @@
     </div>
 
     <div id="compose-view">
-        <h3>New Email</h3>
+        <h3 id="compose-view-head"></h3>
         <form id="compose-form" >
             <div class="form-group">
                 From: <input disabled class="form-control" value="{{ request.user.email }}">
@@ -46,7 +47,7 @@
             <div class="form-group">
                 <input class="form-control" id="compose-subject" placeholder="Subject">
             </div>
-            <textarea class="form-control" id="compose-body" placeholder="Message"></textarea>
+            <div contenteditable="true" class="form-control ContentEditables" id="compose-body" placeholder="Message"></div>
             <input type="button" id="submitButton"class="btn btn-primary" value="submit"/>
         </form>
     </div>
